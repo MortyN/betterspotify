@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import {Link} from 'react-router-dom'
 
 export default function SideBar({playlists}) {
 
@@ -13,7 +14,9 @@ export default function SideBar({playlists}) {
                 {playlists.map(playlist => {
                     return(
                     <li className="flex flex-row text-gray-400 font-medium text-sm mt-1 ml-4" key={playlist.uri}>
-                        <div>{playlist.name}</div>
+                        <Link to={`/playlist/${playlist.id}`}>
+                            <div>{playlist.name}</div>
+                        </Link>
                     </li>
                     )
                 })}

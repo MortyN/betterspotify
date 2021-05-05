@@ -7,7 +7,7 @@ const AUTH_URL = `https://accounts.spotify.com/authorize?client_id=2e17e29772294
 
 export default function Login() {
 
-    window.location.href = AUTH_URL
+    // window.location.href = AUTH_URL
     return(
         <div className="flex flex-col items-center justify-center h-screen">
             <div className=" font-semibold text-9xl text-white flex flex-row select-none">Better<div className="text-green-400 font-bold">Spotify</div></div>
