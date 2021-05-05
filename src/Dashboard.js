@@ -5,7 +5,7 @@ import TrackSearchResult from './TrackSearchResult'
 import Player from './Player';
 import SearchIcon from './img/SearchIcon.svg'
 import SideBar from './SideBar';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import Playlist from './Playlist';
 
 const spotifyApi = new SpotifyWebApi({
@@ -18,22 +18,10 @@ export default function Dashboard({code}){
     const [search, setSearch] = useState("")
     const [searchResults, setSearchResults] = useState([])
     const [playingTrack, setPlayingTrack] = useState()
-    const [playlists, setPlaylists] = useState()
-    // const [selPlaylist, setSelPlaylist] = useState(window.location.pathname.split("/")[2]);
-
-    // const listenToPopstate = () => {
-    //     const winPath = window.location.pathname.split("/")[2];
-    //     console.log("heis")
-    //     setSelPlaylist(winPath);
-    //   };
-
-    // useEffect(() => {
-    //     console.log("ENDRING")
-    // window.addEventListener("popstate", listenToPopstate);
-    // return () => {
-    //     window.removeEventListener("popstate", listenToPopstate);
-    // };
-    // }, []);
+    const [playlists, setPlaylists] = useState([])
+    const [actPlaylistId, setActPlaylistId] = useState([])
+    const [actPlaylist, setActPlaylist] = useState([])
+    
 
     function chooseTrack(track) {
         setPlayingTrack(track)
@@ -47,6 +35,7 @@ export default function Dashboard({code}){
 
  
     useEffect(() =>{
+
         if(!search) return setSearchResults([])
         if(!accessToken) return
 
@@ -75,11 +64,13 @@ export default function Dashboard({code}){
     return () => cancel = true
     },[search, accessToken])
 
+
     useEffect(()=>{
         if(!accessToken) return
-        if(playlists) return
         console.log("hei")
+        let cancel = false
         spotifyApi.getUserPlaylists(spotifyApi.getMe()).then(res=> {
+            if (cancel) return
             console.log(res.body.items)
             setPlaylists(res.body.items.map(playlist =>{
                 return {
@@ -100,57 +91,143 @@ export default function Dashboard({code}){
                 }
             }))
         })
-    })
+        return () => cancel = true
+    },[accessToken])
+
+    useEffect(()=>{
+
+        spotifyApi.getPlaylist(actPlaylistId)
+        .then(function(data) {
+        setActPlaylist(data.body.tracks.items)
     
-    
+        }, function(err) {
+        console.log('Something went wrong!', err);
+        });
+
+    },[actPlaylistId])
 
     return(
             <Router>
-                <Route exact path="/">
-                    <div  className="flex flex-col items-start justify-center h-screen pt-8">
-                        <div className="flex flex-row h-full w-full">
-                            <SideBar playlists={playlists ? playlists : []}/>
-                            <div className="h-full w-full">
-                                
-                                <searchframe className="flex flex-row border h-10 shadow-lg border-gray-400 rounded-full bg-white w-80 ml-4 mt-2 pr-8">
-                                    <img src={SearchIcon} className="h-7 ml-3 my-auto"/>
-                                        <input 
-                                        className="py-3 ml-3 h-full  text-gray-500  focus:outline-none bg-white text-sm w-64"
-                                        type ="text"
-                                        name ="fname"
-                                        placeholder="Artists, songs, or podcasts"
-                                        value={search}
-                                        onChange={e => setSearch(e.target.value)}
+                <div>
+                    <div  className="flex flex-row items-start justify-start h-screen">
+
+                            <div className=" w-64 h-full bg-gray-800 flex flex-col">
+                                <div className="text-gray-300 font-medium text-sm ml-4 mt-14">
+                                    <div className="mb-2">Home</div>
+                                    <div className="my-2">Your Library</div>
+                                </div>
+                                <divider className=" w-full mx-auto border-b border-gray-600 my-4"/>
+                                <playlists>
+                                    {playlists.map(playlist => {
+                                        return(
+                                        <li className="flex flex-row text-gray-400 font-medium text-sm mt-1 ml-4 transition transform duration-100 hover:text-gray-200" key={playlist.uri}>
+                                            <Link to={`/playlist/${playlist.id}`} onClick={() =>{setActPlaylistId(playlist.id)}}>
+                                                <div>{playlist.name}</div>
+                                            </Link>
+                                        </li>
+                                        )
+                                    })}
+                                </playlists>
+                            </div>
+
+                        <Route exact path="/">
+                            <div  className="flex flex-col items-start justify-center h-screen w-full pt-8">
+                                <div className="flex flex-row h-full w-full">
+                                    <div className="h-full w-full">
                                         
-                                        />
-                                        
-                                </searchframe>
-                                    <div className="flex h-5/6 flex-grow my-2 overflow-y-auto flex-col ml-8">
-                                        {searchResults.map(track => (
-                                            <TrackSearchResult track={track} key={track.uri} chooseTrack={chooseTrack}/>
-                                        ))}
+                                        <searchframe className="flex flex-row border h-10 shadow-lg border-gray-400 rounded-full bg-white w-80 ml-4 mt-2 pr-8">
+                                            <img src={SearchIcon} className="h-7 ml-3 my-auto"/>
+                                                <input 
+                                                className="py-3 ml-3 h-full  text-gray-500  focus:outline-none bg-white text-sm w-64"
+                                                type ="text"
+                                                name ="fname"
+                                                placeholder="Artists, songs, or podcasts"
+                                                value={search}
+                                                onChange={e => setSearch(e.target.value)}
+                                                
+                                                />
+                                                
+                                        </searchframe>
+                                            <div className="flex h-5/6 flex-grow my-2 overflow-y-auto flex-col ml-8">
+                                                {searchResults.map(track => (
+                                                    <TrackSearchResult track={track} key={track.uri} chooseTrack={chooseTrack}/>
+                                                ))}
+                                            </div>
                                     </div>
+                                </div>
+                                    
+                                    
                             </div>
-                        </div>
-                            
-                            <Player accessToken={accessToken} trackUri={playingTrack?.uri}/>
-                    </div>
-                </Route>
 
-                <Route exact path="/playlist/:id">
-                    <div  className="flex flex-col items-start justify-center h-screen pt-8">
-                        <div className="flex flex-row h-full w-full">
-                            <SideBar playlists={playlists ? playlists : []}/>
-                            <div className="h-full w-full">
-                                <Playlist accessToken={accessToken} selPlaylist={"selPlaylist"?.id}/>
-                            </div>
-                        </div>                            
-                            <Player accessToken={accessToken} trackUri={playingTrack?.uri}/>
-                    </div>                               
-
+                        </Route>
                         
-                </Route>
+
+                        <Route exact path="/playlist/:id">
+                            <Playlist selPlaylist={actPlaylist}/>                     
+
+                        </Route>
+                        <Player accessToken={accessToken} trackUri={playingTrack?.uri}/>
+                    </div>
+
+                </div>
             </Router>
 
     )
 }
+
+
+
+
+{/* <Route exact path="/">
+                        <div  className="flex flex-col items-start justify-center h-screen pt-8">
+                            <div className="flex flex-row h-full w-full">
+                                <div className="h-full w-full">
+                                    
+                                    <searchframe className="flex flex-row border h-10 shadow-lg border-gray-400 rounded-full bg-white w-80 ml-4 mt-2 pr-8">
+                                        <img src={SearchIcon} className="h-7 ml-3 my-auto"/>
+                                            <input 
+                                            className="py-3 ml-3 h-full  text-gray-500  focus:outline-none bg-white text-sm w-64"
+                                            type ="text"
+                                            name ="fname"
+                                            placeholder="Artists, songs, or podcasts"
+                                            value={search}
+                                            onChange={e => setSearch(e.target.value)}
+                                            
+                                            />
+                                            
+                                    </searchframe>
+                                        <div className="flex h-5/6 flex-grow my-2 overflow-y-auto flex-col ml-8">
+                                            {searchResults.map(track => (
+                                                <TrackSearchResult track={track} key={track.uri} chooseTrack={chooseTrack}/>
+                                            ))}
+                                        </div>
+                                </div>
+                            </div>
+                                
+                                <Player accessToken={accessToken} trackUri={playingTrack?.uri}/>
+                        </div>
+                    </Route> */}
+
+{/* <div className="h-full w-full flex flex-row">
+            <div className=" w-64 h-full bg-gray-800 flex flex-col">
+                <div className="text-gray-300 font-medium text-sm ml-4 mt-10">
+                    <div className="mb-2">Home</div>
+                    <div className="my-2">Your Library</div>
+                </div>
+                <divider className=" w-5/6 mx-auto border-b border-gray-600 my-4"/>
+                <playlists>
+                    {playlists.map(playlist => {
+                        return(
+                        <li className="flex flex-row text-gray-400 font-medium text-sm mt-1 ml-4" key={playlist.uri}>
+                            <Link to={`/playlist/${playlist.id}`} onClick={() =>{setId(playlist.id)}}>
+                                <div>{playlist.name}</div>
+                            </Link>
+                        </li>
+                        )
+                    })}
+                </playlists>
+            </div>
+        <div className="h-full w-full">
+            
+        </div>
+    </div> */}

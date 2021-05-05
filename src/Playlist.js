@@ -6,27 +6,18 @@ const spotifyApi = new SpotifyWebApi({
 
 })
 
-function Playlist({accessToken}, selPlaylistId) {
+function Playlist({selPlaylist}) {
     const[actPlaylist, setActPlaylist] = useState([])
-    const[playlistId, setPlaylistId] = useState(selPlaylistId)
    
-
-  useEffect(() =>{
-      console.log("heisann")
-    // if(!selPlaylist) return
-    // spotifyApi.getPlaylist(selPlaylist.id)
-    // .then(function(data) {
-    //   console.log('Some information about this playlist', data.body.tracks);
-    // //   setActPlaylist(data.body.items)
-
-    // }, function(err) {
-    //   console.log('Something went wrong!', err);
-    // });
-  })
+    useEffect(()=>{
+      setActPlaylist(selPlaylist)
+    },[selPlaylist])
 
     return (
         <div>
-            {console.log("heiSS")}
+            {actPlaylist ? actPlaylist.map(track =>{
+              return(<div>{track.track.name}</div>)
+            }) : []}
                 sdsd
         </div>
     );

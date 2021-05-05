@@ -1,10 +1,12 @@
-import React, { Component } from 'react';
+import React, { Component, useEffect } from 'react';
 
 export default function TrackSearchResult({track, chooseTrack}){
 
     function handlePlay(){
         chooseTrack(track)
     }
+
+   
 
     return(
     <div className="flex flex-row cursor-pointer" onClick={handlePlay}>
