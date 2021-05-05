@@ -6,19 +6,28 @@ const spotifyApi = new SpotifyWebApi({
 
 })
 
-function Playlist({selPlaylist}) {
+function Playlist({selPlaylist, chooseTrack}) {
     const[actPlaylist, setActPlaylist] = useState([])
    
+    function handlePlay(track){
+      chooseTrack(track)
+  }
+
     useEffect(()=>{
       setActPlaylist(selPlaylist)
     },[selPlaylist])
 
     return (
         <div>
-            {actPlaylist ? actPlaylist.map(track =>{
-              return(<div>{track.track.name}</div>)
-            }) : []}
-                sdsd
+            {actPlaylist ? actPlaylist.map(t =>{
+              return( 
+              <div className="flex flex-row cursor-pointer" onClick={() => handlePlay(t.track)}>
+                  <img src={t.track.album.images[2].url} className="h-16 w-16 mb-2"/>
+                  <div className="flex flex-col ml-2 justify-center">
+                      <div className="text-white font-semibold">{t.track?.name}</div>
+                  </div>
+              </div>)}) 
+              : []}
         </div>
     );
 }

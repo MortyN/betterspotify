@@ -163,8 +163,7 @@ export default function Dashboard({code}){
                         
 
                         <Route exact path="/playlist/:id">
-                            <Playlist selPlaylist={actPlaylist}/>                     
-
+                            <Playlist selPlaylist={actPlaylist} chooseTrack={chooseTrack}/>                     
                         </Route>
                         <Player accessToken={accessToken} trackUri={playingTrack?.uri}/>
                     </div>
